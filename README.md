@@ -4,31 +4,29 @@ Fleetify adalah sistem manajemen kehadiran dan karyawan berbasis REST API, diban
 
 ---
 
-## 📊 Dokumentasi API
+## 📊 Dokumentasi API (Sederhana)
 
 Berikut adalah endpoint-endpoint utama dari aplikasi ini.
 
 ### 💼 Karyawan
 
-| Method | Endpoint        | Deskripsi            |
-| ------ | --------------- | -------------------- |
-| GET    | `/employee`     | List semua karyawan  |
-| POST   | `/employee`     | Tambah karyawan baru |
-| PUT    | `/employee/:id` | Update data karyawan |
-| DELETE | `/employee/:id` | Hapus karyawan       |
-
-<!-- | GET    | `/employee/:id` | Ambil detail karyawan berdasarkan ID | -->
+| Method | Endpoint        | Deskripsi                            |
+| ------ | --------------- | ------------------------------------ |
+| GET    | `/employee`     | List semua karyawan                  |
+| GET    | `/employee/:id` | Ambil detail karyawan berdasarkan ID |
+| POST   | `/employee`     | Tambah karyawan baru                 |
+| PUT    | `/employee/:id` | Update data karyawan                 |
+| DELETE | `/employee/:id` | Hapus karyawan                       |
 
 ### 🏢 Departemen
 
-| Method | Endpoint          | Deskripsi              |
-| ------ | ----------------- | ---------------------- |
-| GET    | `/department`     | List semua departemen  |
-| POST   | `/department`     | Tambah departemen baru |
-| PUT    | `/department/:id` | Update data departemen |
-| DELETE | `/department/:id` | Hapus departemen       |
-
-<!-- | GET    | `/department/:id` | Ambil detail departemen berdasarkan ID | -->
+| Method | Endpoint          | Deskripsi                              |
+| ------ | ----------------- | -------------------------------------- |
+| GET    | `/department`     | List semua departemen                  |
+| GET    | `/department/:id` | Ambil detail departemen berdasarkan ID |
+| POST   | `/department`     | Tambah departemen baru                 |
+| PUT    | `/department/:id` | Update data departemen                 |
+| DELETE | `/department/:id` | Hapus departemen                       |
 
 ### ⏰ Absensi
 
@@ -61,7 +59,15 @@ git clone https://github.com/tiedsandi/fleetify-backend-fachransandi.git
 cd fleetify-backend-fachransandi
 ```
 
-### 2. Buat file `.env`
+### 2. Jalankan MySQL & Buat Database
+
+Pastikan MySQL sudah berjalan di `127.0.0.1:3306`. Kemudian buat database baru dengan nama `fleetify`:
+
+```sql
+CREATE DATABASE fleetify;
+```
+
+### 3. Buat file `.env`
 
 ```env
 DB_USER=root
@@ -71,26 +77,26 @@ DB_PORT=3306
 DB_NAME=fleetify
 ```
 
-### 3. Install Dependency
+### 4. Install Dependency
 
 ```bash
 go mod tidy
 ```
 
-### 4. Jalankan
+### 5. Jalankan
 
 ```bash
 go run .
 ```
 
-<!-- ---
+---
 
 ## 🧪 (Optional) Seeder & Testing
 
 ```bash
 go run seed/seeder.go
 go test ./...
-``` -->
+```
 
 ---
 
