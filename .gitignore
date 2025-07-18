@@ -1,0 +1,33 @@
+# Binaries
+/fleetify-backend-fachransandi
+*.exe
+*.out
+*.test
+
+# Output folder
+/bin/
+/build/
+
+# Dependency cache
+/pkg/
+
+# Vendor dir (kalau kamu pakai go mod vendor)
+vendor/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Env / secrets
+.env
+.env.*
+config/*.local.json
