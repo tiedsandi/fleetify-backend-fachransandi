@@ -14,3 +14,31 @@ Content-Type: application/json
   "employee_id": "EMP005"
 }
 
+
+### POST Absen Masuk
+POST http://localhost:8080/absence
+Content-Type: application/json
+
+{
+  "employee_id": "EMP005"
+}
+
+### PUT Absen Keluar
+PUT http://localhost:8080/absence
+Content-Type: application/json
+
+{
+  "employee_id": "EMP005"
+}
+
+### GET Log Absensi - tanpa filter
+GET http://localhost:8080/absence
+
+### GET Log Absensi - filter berdasarkan tanggal
+GET http://localhost:8080/absence?tanggal=2025-07-19
+
+### GET Log Absensi - filter berdasarkan departemen
+GET http://localhost:8080/absence?department_id=1
+
+### GET Log Absensi - filter tanggal + departemen
+GET http://localhost:8080/absence?tanggal=2025-07-19&department_id=1

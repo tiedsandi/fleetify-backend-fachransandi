@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/tiedsandi/fleetify-backend-fachransandi/config"
 	"github.com/tiedsandi/fleetify-backend-fachransandi/models"
 	"github.com/tiedsandi/fleetify-backend-fachransandi/utils"
@@ -96,4 +97,32 @@ func DescriptionClockOut(employeeID string) string {
 
 	overtime := now.Sub(maxTimeToday)
 	return fmt.Sprintf("Lembur %s", utils.FormatDuration(overtime))
+}
+
+func GetEmployeeByID(employeeID string) (models.Employee, error) {
+	var emp models.Employee
+	err := config.DB.Where("employee_id = ?", employeeID).First(&emp).Error
+	return emp, err
+}
+
+func HasClockedInToday(employeeID string) (models.Attendance, error) {
+	today := time.Now()
+	start := today.Truncate(24 * time.Hour)
+	end := start.Add(24 * time.Hour)
+
+	var attendance models.Attendance
+	err := config.DB.
+		Where("employee_id = ? AND clock_in >= ? AND clock_in < ?", employeeID, start, end).
+		First(&attendance).Error
+
+	return attendance, err
+
+}
+
+func ParseDateQueryParam(c *gin.Context, param string) (time.Time, error) {
+	value := c.Query(param)
+	if value == "" {
+		return time.Time{}, nil
+	}
+	return time.Parse("2006-01-02", value)
 }

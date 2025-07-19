@@ -16,91 +16,64 @@ type AttendanceRequest struct {
 
 func CreateAttendanceIn(c *gin.Context) {
 	var req AttendanceRequest
-
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var emp models.Employee
-	if err := config.DB.Where("employee_id = ?", req.EmployeeID).First(&emp).Error; err != nil {
+	_, err := helpers.GetEmployeeByID(req.EmployeeID)
+	if err != nil {
 		c.JSON(404, gin.H{"error": "Employee not found"})
 		return
 	}
 
-	today := time.Now()
-	start := today.Truncate(24 * time.Hour)
-	end := start.Add(24 * time.Hour)
-
-	var existing models.Attendance
-	err := config.DB.
-		Where("employee_id = ? AND clock_in >= ? AND clock_in < ?", req.EmployeeID, start, end).
-		First(&existing).Error
-	if err == nil {
+	if _, err := helpers.HasClockedInToday(req.EmployeeID); err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "You have already clocked in today"})
 		return
 	}
 
-	EmployeeId, _ := helpers.GenerateAttendanceID(req.EmployeeID)
+	attendanceID, _ := helpers.GenerateAttendanceID(req.EmployeeID)
+	now := time.Now()
 
 	attendance := models.Attendance{
 		EmployeeID:   req.EmployeeID,
-		AttendanceID: EmployeeId,
-		ClockIn:      time.Now(),
+		AttendanceID: attendanceID,
+		ClockIn:      now,
 	}
-
-	if err := config.DB.Create(&attendance).Error; err != nil {
-		c.JSON(500, gin.H{"error": "Failed to create attendance"})
-		return
-	}
+	config.DB.Create(&attendance)
 
 	desc := helpers.DescriptionClockIn(req.EmployeeID)
 
 	history := models.AttendanceHistory{
 		EmployeeID:     req.EmployeeID,
-		AttendanceID:   EmployeeId,
-		DateAttendance: time.Now(),
+		AttendanceID:   attendanceID,
+		DateAttendance: now,
 		AttendanceType: 1,
 		Description:    desc,
 	}
+	config.DB.Create(&history)
 
-	if err := config.DB.Create(&history).Error; err != nil {
-		c.JSON(500, gin.H{"error": "Failed to create attendance history"})
-		return
-	}
-
-	c.JSON(201, gin.H{
+	c.JSON(http.StatusCreated, gin.H{
 		"message":       "Clock in successful",
-		"attendance_id": EmployeeId,
-		"clock_in_time": attendance.ClockIn,
+		"attendance_id": attendanceID,
+		"clock_in_time": now,
 		"employee_id":   req.EmployeeID,
 	})
-
 }
 
 func UpdateAttendanceOut(c *gin.Context) {
 	var req AttendanceRequest
-
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var emp models.Employee
-	if err := config.DB.Where("employee_id = ?", req.EmployeeID).First(&emp).Error; err != nil {
+	if _, err := helpers.GetEmployeeByID(req.EmployeeID); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
 		return
 	}
 
-	today := time.Now()
-	start := today.Truncate(24 * time.Hour)
-	end := start.Add(24 * time.Hour)
-
-	var attendance models.Attendance
-	err := config.DB.
-		Where("employee_id = ? AND clock_in >= ? AND clock_in < ?", req.EmployeeID, start, end).
-		First(&attendance).Error
-
+	attendance, err := helpers.HasClockedInToday(req.EmployeeID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No clock-in found for today"})
 		return
@@ -113,7 +86,6 @@ func UpdateAttendanceOut(c *gin.Context) {
 
 	now := time.Now()
 	attendance.ClockOut = now
-
 	if err := config.DB.Save(&attendance).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update clock out"})
 		return
@@ -128,18 +100,62 @@ func UpdateAttendanceOut(c *gin.Context) {
 		AttendanceType: 2,
 		Description:    desc,
 	}
-
-	if err := config.DB.Create(&history).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create attendance history"})
-		return
-	}
+	config.DB.Create(&history)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":        "Clock out successful",
 		"attendance_id":  attendance.AttendanceID,
-		"clock_out_time": attendance.ClockOut,
+		"clock_out_time": now,
 		"employee_id":    req.EmployeeID,
 	})
 }
 
-func GetAttendanceLogs(c *gin.Context) {}
+func GetAttendanceLogs(c *gin.Context) {
+	dateFilter, err := helpers.ParseDateQueryParam(c, "tanggal")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD"})
+		return
+	}
+	deptID := c.Query("department_id")
+
+	var logs []struct {
+		AttendanceHistoryID uint      `json:"id"`
+		EmployeeID          string    `json:"employee_id"`
+		Name                string    `json:"name"`
+		DepartmentName      string    `json:"department"`
+		DateAttendance      time.Time `json:"date_attendance"`
+		AttendanceType      string    `json:"type"`
+		Description         string    `json:"description"`
+	}
+
+	query := config.DB.
+		Table("attendance_history").
+		Select(`
+			attendance_history.id as attendance_history_id,
+			employees.employee_id,
+			employees.name,
+			departments.department_name,
+			attendance_history.date_attendance,
+			CASE attendance_history.attendance_type
+				WHEN 1 THEN 'Masuk'
+				WHEN 2 THEN 'Keluar'
+				ELSE 'Tidak diketahui'
+			END as attendance_type,
+			attendance_history.description`).
+		Joins("JOIN employees ON employees.employee_id = attendance_history.employee_id").
+		Joins("JOIN departments ON departments.id = employees.department_id")
+
+	if !dateFilter.IsZero() {
+		query = query.Where("DATE(attendance_history.date_attendance) = ?", dateFilter.Format("2006-01-02"))
+	}
+	if deptID != "" {
+		query = query.Where("departments.id = ?", deptID)
+	}
+
+	if err := query.Order("attendance_history.date_attendance desc").Scan(&logs).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get logs"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": logs})
+}
