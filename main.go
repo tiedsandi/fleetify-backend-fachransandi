@@ -11,7 +11,7 @@ import (
 
 func main() {
 	config.InitDB()
-	config.ResetDB()
+	// config.ResetDB()
 	config.Migration()
 
 	server := gin.Default()

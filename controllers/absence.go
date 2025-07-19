@@ -54,12 +54,14 @@ func CreateAttendanceIn(c *gin.Context) {
 		return
 	}
 
+	desc := helpers.DescriptionAttendance(req.EmployeeID)
+
 	history := models.AttendanceHistory{
 		EmployeeID:     req.EmployeeID,
 		AttendanceID:   EmployeeId,
 		DateAttendance: time.Now(),
-		AttendanceType: 1, // 1 = clock-in
-		Description:    "Clock in",
+		AttendanceType: 1,
+		Description:    desc,
 	}
 
 	if err := config.DB.Create(&history).Error; err != nil {
