@@ -30,3 +30,7 @@ func Migration() {
 		// &models.AttendanceHistory{},
 	)
 }
+
+func ResetDB() {
+	DB.Migrator().DropTable(&models.Department{})
+}

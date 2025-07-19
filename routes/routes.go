@@ -7,4 +7,5 @@ func RegisterRoutes(router *gin.Engine) {
 		c.JSON(200, gin.H{"message": "pong"})
 	})
 
+	DepartmentRoutes(router)
 }
