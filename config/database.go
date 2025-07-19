@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 
+	"github.com/tiedsandi/fleetify-backend-fachransandi/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -19,4 +20,13 @@ func InitDB() {
 
 	DB = db
 	log.Println("✅ Koneksi ke database berhasil")
+}
+
+func Migration() {
+	DB.AutoMigrate(
+		// &models.Employee{},
+		&models.Department{},
+		// &models.Attendance{},
+		// &models.AttendanceHistory{},
+	)
 }
