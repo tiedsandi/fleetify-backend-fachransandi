@@ -24,13 +24,38 @@ func InitDB() {
 
 func Migration() {
 	DB.AutoMigrate(
-		&models.Employee{},
 		&models.Department{},
-		// &models.Attendance{},
-		// &models.AttendanceHistory{},
+		&models.Employee{},
+		&models.Attendance{},
+		&models.AttendanceHistory{},
 	)
+
+	DB.Exec(`
+		ALTER TABLE attendance
+		ADD CONSTRAINT fk_attendance_employee
+		FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+		 ON DELETE RESTRICT ON UPDATE RESTRICT
+	`)
+	DB.Exec(`
+		ALTER TABLE attendance_history
+		ADD CONSTRAINT fk_attendance_history_attendance
+		FOREIGN KEY (attendance_id) REFERENCES attendance(attendance_id)
+		 ON DELETE RESTRICT ON UPDATE RESTRICT
+	`)
+	DB.Exec(`
+		ALTER TABLE attendance_history
+		ADD CONSTRAINT fk_attendance_history_employee
+		FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+		 ON DELETE RESTRICT ON UPDATE RESTRICT
+	`)
+
 }
 
 func ResetDB() {
-	DB.Migrator().DropTable(&models.Department{})
+	DB.Migrator().DropTable(
+		&models.AttendanceHistory{},
+		&models.Attendance{},
+		&models.Employee{},
+		&models.Department{},
+	)
 }
