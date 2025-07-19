@@ -5,10 +5,13 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/tiedsandi/fleetify-backend-fachransandi/config"
 	"github.com/tiedsandi/fleetify-backend-fachransandi/routes"
 )
 
 func main() {
+	config.InitDB()
+
 	server := gin.Default()
 
 	server.Use(cors.New(cors.Config{
