@@ -8,4 +8,5 @@ func RegisterRoutes(router *gin.Engine) {
 	})
 
 	DepartmentRoutes(router)
+	EmployeeRoutes(router)
 }

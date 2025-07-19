@@ -24,7 +24,7 @@ func InitDB() {
 
 func Migration() {
 	DB.AutoMigrate(
-		// &models.Employee{},
+		&models.Employee{},
 		&models.Department{},
 		// &models.Attendance{},
 		// &models.AttendanceHistory{},
