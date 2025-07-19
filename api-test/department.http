@@ -1,0 +1,28 @@
+### Create Department
+POST http://localhost:8080/departments
+Content-Type: application/json
+
+{
+  "department_name": "Developer",
+  "max_clock_in_time": "08:00:00",
+  "max_clock_out_time": "17:00:00"
+}
+
+### Get All Departments
+GET http://localhost:8080/departments
+
+### Get Department By ID
+GET http://localhost:8080/departments/1
+
+### Update Department
+PUT http://localhost:8080/departments/1
+Content-Type: application/json
+
+{
+  "department_name": "Developer Updated",
+  "max_clock_in_time": "09:00:00",
+  "max_clock_out_time": "18:00:00"
+}
+
+### Delete Department
+DELETE http://localhost:8080/departments/1
