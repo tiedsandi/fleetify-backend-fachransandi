@@ -54,7 +54,7 @@ func CreateAttendanceIn(c *gin.Context) {
 		return
 	}
 
-	desc := helpers.DescriptionAttendance(req.EmployeeID)
+	desc := helpers.DescriptionClockIn(req.EmployeeID)
 
 	history := models.AttendanceHistory{
 		EmployeeID:     req.EmployeeID,
@@ -78,6 +78,68 @@ func CreateAttendanceIn(c *gin.Context) {
 
 }
 
-func UpdateAttendanceOut(c *gin.Context) {}
+func UpdateAttendanceOut(c *gin.Context) {
+	var req AttendanceRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var emp models.Employee
+	if err := config.DB.Where("employee_id = ?", req.EmployeeID).First(&emp).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
+		return
+	}
+
+	today := time.Now()
+	start := today.Truncate(24 * time.Hour)
+	end := start.Add(24 * time.Hour)
+
+	var attendance models.Attendance
+	err := config.DB.
+		Where("employee_id = ? AND clock_in >= ? AND clock_in < ?", req.EmployeeID, start, end).
+		First(&attendance).Error
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No clock-in found for today"})
+		return
+	}
+
+	if !attendance.ClockOut.IsZero() {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "You have already clocked out today"})
+		return
+	}
+
+	now := time.Now()
+	attendance.ClockOut = now
+
+	if err := config.DB.Save(&attendance).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update clock out"})
+		return
+	}
+
+	desc := helpers.DescriptionClockOut(req.EmployeeID)
+
+	history := models.AttendanceHistory{
+		EmployeeID:     req.EmployeeID,
+		AttendanceID:   attendance.AttendanceID,
+		DateAttendance: now,
+		AttendanceType: 2,
+		Description:    desc,
+	}
+
+	if err := config.DB.Create(&history).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create attendance history"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Clock out successful",
+		"attendance_id":  attendance.AttendanceID,
+		"clock_out_time": attendance.ClockOut,
+		"employee_id":    req.EmployeeID,
+	})
+}
 
 func GetAttendanceLogs(c *gin.Context) {}

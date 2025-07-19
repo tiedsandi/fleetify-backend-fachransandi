@@ -52,7 +52,7 @@ func GenerateAttendanceID(employeeID string) (string, error) {
 	return fmt.Sprintf("%s-%s-%d", code, today, last.ID+1), nil
 }
 
-func DescriptionAttendance(employeeID string) string {
+func DescriptionClockIn(employeeID string) string {
 	var employee models.Employee
 	if err := config.DB.Preload("Department").Where("employee_id = ?", employeeID).First(&employee).Error; err != nil {
 		return "Unknown employee or department"
@@ -73,4 +73,27 @@ func DescriptionAttendance(employeeID string) string {
 
 	lateDuration := now.Sub(maxTimeToday)
 	return fmt.Sprintf("Late %s", utils.FormatDuration(lateDuration))
+}
+
+func DescriptionClockOut(employeeID string) string {
+	var employee models.Employee
+	if err := config.DB.Preload("Department").Where("employee_id = ?", employeeID).First(&employee).Error; err != nil {
+		return "Unknown employee or department"
+	}
+
+	maxClockOut, err := time.Parse("15:04:05", employee.Department.MaxClockOutTime)
+	if err != nil {
+		return "Invalid clock-out time format"
+	}
+
+	now := time.Now()
+	maxTimeToday := time.Date(now.Year(), now.Month(), now.Day(),
+		maxClockOut.Hour(), maxClockOut.Minute(), maxClockOut.Second(), 0, now.Location())
+
+	if now.Before(maxTimeToday) {
+		return "Pulang awal"
+	}
+
+	overtime := now.Sub(maxTimeToday)
+	return fmt.Sprintf("Lembur %s", utils.FormatDuration(overtime))
 }
