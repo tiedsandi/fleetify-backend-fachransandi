@@ -11,12 +11,12 @@ import (
 func CreateDepartment(c *gin.Context) {
 	var dept models.Department
 	if err := c.ShouldBindJSON(&dept); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Data Input tidak valid: " + err.Error()})
 		return
 	}
 
 	if err := config.DB.Create(&dept).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save department"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyimpan data departemen"})
 		return
 	}
 
@@ -26,7 +26,7 @@ func CreateDepartment(c *gin.Context) {
 func GetDepartments(c *gin.Context) {
 	var departments []models.Department
 	if err := config.DB.Find(&departments).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch departments"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil data departemen"})
 		return
 	}
 	c.JSON(http.StatusOK, departments)
@@ -37,7 +37,7 @@ func GetDepartmentByID(c *gin.Context) {
 	var dept models.Department
 
 	if err := config.DB.First(&dept, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Department not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Departemen tidak ditemukan"})
 		return
 	}
 
@@ -49,17 +49,17 @@ func UpdateDepartment(c *gin.Context) {
 	var dept models.Department
 
 	if err := config.DB.First(&dept, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Department not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Departemen tidak ditemukan"})
 		return
 	}
 
 	if err := c.ShouldBindJSON(&dept); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Data input tidak valid: " + err.Error()})
 		return
 	}
 
 	if err := config.DB.Save(&dept).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update department"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memperbarui data departemen"})
 		return
 	}
 
@@ -71,14 +71,14 @@ func DeleteDepartment(c *gin.Context) {
 	var dept models.Department
 
 	if err := config.DB.First(&dept, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Department not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Departemen tidak ditemukan"})
 		return
 	}
 
 	if err := config.DB.Delete(&dept).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete department"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menghapus departemen"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Department deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "Departemen berhasil dihapus"})
 }

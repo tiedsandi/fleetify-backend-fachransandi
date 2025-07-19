@@ -17,18 +17,18 @@ type AttendanceRequest struct {
 func CreateAttendanceIn(c *gin.Context) {
 	var req AttendanceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Data absensi tidak valid: " + err.Error()})
 		return
 	}
 
 	_, err := helpers.GetEmployeeByID(req.EmployeeID)
 	if err != nil {
-		c.JSON(404, gin.H{"error": "Employee not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Karyawan tidak ditemukan"})
 		return
 	}
 
 	if _, err := helpers.HasClockedInToday(req.EmployeeID); err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "You have already clocked in today"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Anda sudah melakukan absensi masuk hari ini"})
 		return
 	}
 
@@ -54,7 +54,7 @@ func CreateAttendanceIn(c *gin.Context) {
 	config.DB.Create(&history)
 
 	c.JSON(http.StatusCreated, gin.H{
-		"message":       "Clock in successful",
+		"message":       "Absensi masuk berhasil",
 		"attendance_id": attendanceID,
 		"clock_in_time": now,
 		"employee_id":   req.EmployeeID,
@@ -64,30 +64,30 @@ func CreateAttendanceIn(c *gin.Context) {
 func UpdateAttendanceOut(c *gin.Context) {
 	var req AttendanceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Data absensi tidak valid: " + err.Error()})
 		return
 	}
 
 	if _, err := helpers.GetEmployeeByID(req.EmployeeID); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Karyawan tidak ditemukan"})
 		return
 	}
 
 	attendance, err := helpers.HasClockedInToday(req.EmployeeID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No clock-in found for today"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Belum ada absensi masuk untuk hari ini"})
 		return
 	}
 
 	if !attendance.ClockOut.IsZero() {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "You have already clocked out today"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Anda sudah melakukan absensi keluar hari ini"})
 		return
 	}
 
 	now := time.Now()
 	attendance.ClockOut = now
 	if err := config.DB.Save(&attendance).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update clock out"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyimpan absensi keluar"})
 		return
 	}
 
@@ -103,7 +103,7 @@ func UpdateAttendanceOut(c *gin.Context) {
 	config.DB.Create(&history)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":        "Clock out successful",
+		"message":        "Absensi keluar berhasil",
 		"attendance_id":  attendance.AttendanceID,
 		"clock_out_time": now,
 		"employee_id":    req.EmployeeID,
@@ -113,7 +113,7 @@ func UpdateAttendanceOut(c *gin.Context) {
 func GetAttendanceLogs(c *gin.Context) {
 	dateFilter, err := helpers.ParseDateQueryParam(c, "tanggal")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Format tanggal tidak valid. Gunakan format YYYY-MM-DD"})
 		return
 	}
 	deptID := c.Query("department_id")
@@ -153,7 +153,7 @@ func GetAttendanceLogs(c *gin.Context) {
 	}
 
 	if err := query.Order("attendance_history.date_attendance desc").Scan(&logs).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get logs"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil riwayat absensi"})
 		return
 	}
 

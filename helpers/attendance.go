@@ -15,7 +15,11 @@ func GenerateAttendanceID(employeeID string) (string, error) {
 	var emp models.Employee
 	err := config.DB.Preload("Department").Where("employee_id = ?", employeeID).First(&emp).Error
 	if err != nil {
-		return "", fmt.Errorf("employee not found")
+		return "", fmt.Errorf("karyawan tidak ditemukan")
+	}
+
+	if emp.Department.ID == 0 {
+		return "", fmt.Errorf("karyawan tidak memiliki departemen yang valid")
 	}
 
 	deptName := strings.ToLower(emp.Department.DepartmentName)
@@ -31,21 +35,7 @@ func GenerateAttendanceID(employeeID string) (string, error) {
 		code = "GEN"
 	}
 
-	// 	var code string
-	// switch strings.ToLower(emp.Department.DepartmentName) {
-	// case "hr", "human resource":
-	// 	code = "HR"
-	// case "developer":
-	// 	code = "DEV"
-	// case "marketing":
-	// 	code = "MKT"
-	// case "finance":
-	// 	code = "FIN"
-	// default:
-	// 	code = "GEN"
-	// }
-
-	today := time.Now().Format("20250720")
+	today := time.Now().Format("20060102")
 
 	var last models.Attendance
 	_ = config.DB.Select("id").Order("id desc").First(&last).Error
@@ -56,12 +46,12 @@ func GenerateAttendanceID(employeeID string) (string, error) {
 func DescriptionClockIn(employeeID string) string {
 	var employee models.Employee
 	if err := config.DB.Preload("Department").Where("employee_id = ?", employeeID).First(&employee).Error; err != nil {
-		return "Unknown employee or department"
+		return "Karyawan atau departemen tidak ditemukan"
 	}
 
 	maxClockIn, err := time.Parse("15:04:05", employee.Department.MaxClockInTime)
 	if err != nil {
-		return "Invalid clock-in time format"
+		return "Format jam masuk departemen tidak valid"
 	}
 
 	now := time.Now()
@@ -69,22 +59,22 @@ func DescriptionClockIn(employeeID string) string {
 		maxClockIn.Hour(), maxClockIn.Minute(), maxClockIn.Second(), 0, now.Location())
 
 	if now.Before(maxTimeToday) || now.Equal(maxTimeToday) {
-		return "On time"
+		return "Tepat waktu"
 	}
 
 	lateDuration := now.Sub(maxTimeToday)
-	return fmt.Sprintf("Late %s", utils.FormatDuration(lateDuration))
+	return fmt.Sprintf("Terlambat %s", utils.FormatDuration(lateDuration))
 }
 
 func DescriptionClockOut(employeeID string) string {
 	var employee models.Employee
 	if err := config.DB.Preload("Department").Where("employee_id = ?", employeeID).First(&employee).Error; err != nil {
-		return "Unknown employee or department"
+		return "Karyawan atau departemen tidak ditemukan"
 	}
 
 	maxClockOut, err := time.Parse("15:04:05", employee.Department.MaxClockOutTime)
 	if err != nil {
-		return "Invalid clock-out time format"
+		return "Format jam pulang departemen tidak valid"
 	}
 
 	now := time.Now()
@@ -92,7 +82,7 @@ func DescriptionClockOut(employeeID string) string {
 		maxClockOut.Hour(), maxClockOut.Minute(), maxClockOut.Second(), 0, now.Location())
 
 	if now.Before(maxTimeToday) {
-		return "Pulang awal"
+		return "Pulang lebih awal"
 	}
 
 	overtime := now.Sub(maxTimeToday)
@@ -116,7 +106,6 @@ func HasClockedInToday(employeeID string) (models.Attendance, error) {
 		First(&attendance).Error
 
 	return attendance, err
-
 }
 
 func ParseDateQueryParam(c *gin.Context, param string) (time.Time, error) {
