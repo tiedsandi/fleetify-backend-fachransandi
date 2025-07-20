@@ -1,6 +1,6 @@
 # 🚗 Fleetify Backend - Fachransandi
 
-Fleetify adalah sistem manajemen kehadiran dan karyawan berbasis REST API, dibangun menggunakan Golang (`gin`) dan MySQL. Project ini merupakan bagian dari **studi kasus rekrutmen** berdasarkan ERD, flowchart, dan data tabel yang telah ditentukan.
+Sebuah perusahaan Multinasional memiliki jumlah karyawan diatas 50 karyawan, dan memiliki berbagai macam Divisi atau departemen didalamnya. Karena banyaknya karyawan untuk dikelola, perusahaan membutuhkan Sistem untuk Absensi guna mencatat serta mengevaluasi kedisiplinan karyawan secara sistematis.
 
 ---
 
@@ -67,23 +67,13 @@ Pastikan MySQL sudah berjalan di `127.0.0.1:3306`. Kemudian buat database baru d
 CREATE DATABASE fleetify;
 ```
 
-### 3. Buat file `.env`
-
-```env
-DB_USER=root
-DB_PASS=password
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_NAME=fleetify
-```
-
-### 4. Install Dependency
+### 3. Install Dependency
 
 ```bash
 go mod tidy
 ```
 
-### 5. Jalankan
+### 4. Jalankan
 
 ```bash
 go run .
@@ -91,21 +81,11 @@ go run .
 
 ---
 
-## 🧪 (Optional) Seeder & Testing
+## 🧪 (Optional) Seeder & Reset
 
 ```bash
-go run seed/seeder.go
-go test ./...
+ #main.go
+ seeds.AddSeeder()
+
+ config.ResetDB()
 ```
-
----
-
-## 👨‍💻 Author
-
-Fachransandi ([@tiedsandi](https://github.com/tiedsandi))
-
----
-
-## 📜 License
-
-This project is open-source under the [MIT License](LICENSE).
