@@ -9,6 +9,6 @@ type Employee struct {
 	Department   Department `gorm:"foreignKey:DepartmentID;references:ID" json:"department"`
 	Name         string     `gorm:"type:varchar(255);not null" json:"name"`
 	Address      string     `gorm:"type:text;not null" json:"address"`
-	CreatedAt    time.Time  `json:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at"`
+	CreatedAt    time.Time  `gorm:"type:dateTime(0)" json:"created_at"`
+	UpdatedAt    time.Time  `gorm:"type:dateTime(0)" json:"updated_at"`
 }

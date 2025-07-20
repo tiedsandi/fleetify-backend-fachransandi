@@ -34,19 +34,19 @@ func Migration() {
 		ALTER TABLE attendance
 		ADD CONSTRAINT fk_attendance_employee
 		FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
-		 ON DELETE RESTRICT ON UPDATE RESTRICT
+		 ON DELETE RESTRICT ON UPDATE CASCADE
 	`)
 	DB.Exec(`
 		ALTER TABLE attendance_history
 		ADD CONSTRAINT fk_attendance_history_attendance
 		FOREIGN KEY (attendance_id) REFERENCES attendance(attendance_id)
-		 ON DELETE RESTRICT ON UPDATE RESTRICT
+		 ON DELETE RESTRICT ON UPDATE CASCADE
 	`)
 	DB.Exec(`
 		ALTER TABLE attendance_history
 		ADD CONSTRAINT fk_attendance_history_employee
 		FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
-		 ON DELETE RESTRICT ON UPDATE RESTRICT
+		 ON DELETE RESTRICT ON UPDATE CASCADE
 	`)
 
 }

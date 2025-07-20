@@ -88,14 +88,28 @@ func UpdateEmployeeService(id string, input EmployeeRequest) (*models.Employee, 
 }
 
 func DeleteEmployeeService(id string) error {
+	tx := config.DB.Begin()
+
 	var employee models.Employee
-	if err := config.DB.First(&employee, id).Error; err != nil {
+	if err := tx.First(&employee, id).Error; err != nil {
+		tx.Rollback()
 		return errors.New("karyawan tidak ditemukan")
 	}
 
-	if err := config.DB.Delete(&employee).Error; err != nil {
+	if err := tx.Where("employee_id = ?", employee.EmployeeID).Delete(&models.AttendanceHistory{}).Error; err != nil {
+		tx.Rollback()
+		return errors.New("gagal menghapus riwayat absensi")
+	}
+
+	if err := tx.Where("employee_id = ?", employee.EmployeeID).Delete(&models.Attendance{}).Error; err != nil {
+		tx.Rollback()
+		return errors.New("gagal menghapus absensi")
+	}
+
+	if err := tx.Delete(&employee).Error; err != nil {
+		tx.Rollback()
 		return errors.New("gagal menghapus karyawan")
 	}
 
-	return nil
+	return tx.Commit().Error
 }

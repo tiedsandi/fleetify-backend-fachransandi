@@ -3,7 +3,7 @@ POST http://localhost:8080/absence
 Content-Type: application/json
 
 {
-  "employee_id": "EMP001"
+  "employee_id": "FIN-001"
 }
 
 ### PUT Absen Keluar
@@ -11,7 +11,7 @@ PUT http://localhost:8080/absence
 Content-Type: application/json
 
 {
-  "employee_id": "EMP001"
+  "employee_id": "FIN-001"
 }
 
 ### GET Log Absensi - tanpa filter

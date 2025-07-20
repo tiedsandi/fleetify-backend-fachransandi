@@ -59,12 +59,41 @@ func UpdateDepartmentService(id string, input DepartmentRequest) (*models.Depart
 }
 
 func DeleteDepartmentService(id string) error {
+	tx := config.DB.Begin()
+
 	var dept models.Department
-	if err := config.DB.First(&dept, id).Error; err != nil {
+	if err := tx.First(&dept, id).Error; err != nil {
+		tx.Rollback()
 		return errors.New("departemen tidak ditemukan")
 	}
-	if err := config.DB.Delete(&dept).Error; err != nil {
+
+	var employees []models.Employee
+	if err := tx.Where("department_id = ?", id).Find(&employees).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	for _, emp := range employees {
+		if err := tx.Where("employee_id = ?", emp.EmployeeID).Delete(&models.AttendanceHistory{}).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		if err := tx.Where("employee_id = ?", emp.EmployeeID).Delete(&models.Attendance{}).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Where("department_id = ?", id).Delete(&models.Employee{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Delete(&dept).Error; err != nil {
+		tx.Rollback()
 		return errors.New("gagal menghapus departemen")
 	}
-	return nil
+
+	return tx.Commit().Error
 }
