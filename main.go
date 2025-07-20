@@ -7,12 +7,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/tiedsandi/fleetify-backend-fachransandi/config"
 	"github.com/tiedsandi/fleetify-backend-fachransandi/routes"
+	seeders "github.com/tiedsandi/fleetify-backend-fachransandi/seed"
 )
 
 func main() {
 	config.InitDB()
-	// config.ResetDB()
+	config.ResetDB()
 	config.Migration()
+	seeders.SeedDepartments()
+	seeders.SeedEmployees()
+	seeders.SeedAbsences()
 
 	server := gin.Default()
 
