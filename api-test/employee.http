@@ -4,9 +4,9 @@ Content-Type: application/json
 
 {
   "employee_id": "EMP001",
-  "department_id": 2,
-  "name": "John Doe",
-  "address": "123 Fleet Street"
+  "department_id": 1,
+  "name": "Fachran Sandi",
+  "address": "56 Cilangkap Jakarta Timur"
 }
 
 ### Get All
@@ -21,9 +21,9 @@ Content-Type: application/json
 
 {
   "employee_id": "EMP001",
-  "department_id": 4,
-  "name": "John Update",
-  "address": "123 Update"
+  "department_id": 2,
+  "name": "Fachran Sandi Update",
+  "address": "90 Cilangkap Jakarta Timur"
 }
 
 ### Delete

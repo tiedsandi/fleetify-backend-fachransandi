@@ -96,13 +96,15 @@ func GetEmployeeByID(employeeID string) (models.Employee, error) {
 }
 
 func HasClockedInToday(employeeID string) (models.Attendance, error) {
-	today := time.Now()
-	start := today.Truncate(24 * time.Hour)
-	end := start.Add(24 * time.Hour)
+	loc, _ := time.LoadLocation("Asia/Jakarta")
+	now := time.Now().In(loc)
+
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+	endOfDay := startOfDay.Add(24 * time.Hour)
 
 	var attendance models.Attendance
 	err := config.DB.
-		Where("employee_id = ? AND clock_in >= ? AND clock_in < ?", employeeID, start, end).
+		Where("employee_id = ? AND clock_in >= ? AND clock_in < ?", employeeID, startOfDay, endOfDay).
 		First(&attendance).Error
 
 	return attendance, err

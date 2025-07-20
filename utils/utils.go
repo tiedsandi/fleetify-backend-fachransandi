@@ -6,27 +6,20 @@ import (
 )
 
 func FormatDuration(d time.Duration) string {
-	hours := int(d.Hours())
-	minutes := int(d.Minutes()) % 60
-	seconds := int(d.Seconds()) % 60
+	jam := int(d.Hours())
+	menit := int(d.Minutes()) % 60
+	detik := int(d.Seconds()) % 60
 
 	result := ""
-	if hours > 0 {
-		result += fmt.Sprintf("%d hour%s ", hours, plural(hours))
+	if jam > 0 {
+		result += fmt.Sprintf("%d jam ", jam)
 	}
-	if minutes > 0 {
-		result += fmt.Sprintf("%d minute%s ", minutes, plural(minutes))
+	if menit > 0 {
+		result += fmt.Sprintf("%d menit ", menit)
 	}
-	if seconds > 0 || result == "" {
-		result += fmt.Sprintf("%d second%s", seconds, plural(seconds))
+	if detik > 0 || result == "" {
+		result += fmt.Sprintf("%d detik", detik)
 	}
 
 	return result
-}
-
-func plural(n int) string {
-	if n == 1 {
-		return ""
-	}
-	return "s"
 }
