@@ -3,7 +3,7 @@ POST http://localhost:8080/employees
 Content-Type: application/json
 
 {
-  "employee_id": "EMP001",
+  "employee_id": "Dev-002",
   "department_id": 1,
   "name": "Fachran Sandi",
   "address": "56 Cilangkap Jakarta Timur"
@@ -13,14 +13,14 @@ Content-Type: application/json
 GET http://localhost:8080/employees
 
 ### Get By ID
-GET http://localhost:8080/employees/1
+GET http://localhost:8080/employees/11
 
 ### Update
-PUT http://localhost:8080/employees/1
+PUT http://localhost:8080/employees/11
 Content-Type: application/json
 
 {
-  "employee_id": "EMP001",
+  "employee_id": "ENG-002",
   "department_id": 2,
   "name": "Fachran Sandi Update",
   "address": "90 Cilangkap Jakarta Timur"

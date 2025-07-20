@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/tiedsandi/fleetify-backend-fachransandi/config"
+	"github.com/tiedsandi/fleetify-backend-fachransandi/helpers"
 	"github.com/tiedsandi/fleetify-backend-fachransandi/models"
 )
 
@@ -14,6 +15,10 @@ type DepartmentRequest struct {
 }
 
 func CreateDepartmentService(input DepartmentRequest) (*models.Department, error) {
+	if err := helpers.ValidateClockTimes(input.MaxClockInTime, input.MaxClockOutTime); err != nil {
+		return nil, err
+	}
+
 	dept := models.Department{
 		DepartmentName:  input.DepartmentName,
 		MaxClockInTime:  input.MaxClockInTime,
@@ -42,6 +47,10 @@ func GetDepartmentByIDService(id string) (*models.Department, error) {
 }
 
 func UpdateDepartmentService(id string, input DepartmentRequest) (*models.Department, error) {
+	if err := helpers.ValidateClockTimes(input.MaxClockInTime, input.MaxClockOutTime); err != nil {
+		return nil, err
+	}
+
 	var dept models.Department
 	if err := config.DB.First(&dept, id).Error; err != nil {
 		return nil, errors.New("departemen tidak ditemukan")
